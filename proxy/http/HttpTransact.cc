@@ -4442,7 +4442,9 @@ HttpTransact::handle_cache_operation_on_forward_server_response(State *s)
         ink_assert(s->cache_info.object_read != nullptr);
         s->cache_info.action = CACHE_DO_REPLACE;
 
-        if (s->hdr_info.client_request.presence(MIME_PRESENCE_RANGE)) {
+        auto *client_request  = &s->hdr_info.client_request;
+        if (client_request->presence(MIME_PRESENCE_RANGE) &&
+            HttpTransactCache::validate_ifrange_header_if_any(client_request, base_response)) {
           s->state_machine->do_range_setup_if_necessary();
         }
       }
@@ -4454,7 +4456,9 @@ HttpTransact::handle_cache_operation_on_forward_server_response(State *s)
         s->cache_info.action = CACHE_DO_NO_ACTION;
       } else {
         s->cache_info.action = CACHE_DO_WRITE;
-        if (s->hdr_info.client_request.presence(MIME_PRESENCE_RANGE)) {
+        auto *client_request  = &s->hdr_info.client_request;
+        if (client_request->presence(MIME_PRESENCE_RANGE) &&
+            HttpTransactCache::validate_ifrange_header_if_any(client_request, base_response)) {
           s->state_machine->do_range_setup_if_necessary();
         }
       }
